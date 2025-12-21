@@ -1,11 +1,18 @@
 import { Router } from 'express'
+import { startPomodoro, abandonmentPomodoro, getCurrentPomodoro } from '../controllers/pomodoroController'
+import authMiddleware from '../middleware/authMiddleware'
 
 const router = Router()
 
-// Rotas de Pomodoro serão implementadas aqui
+// pomodoro routes
 // POST /pomodoro/start
+router.post('/start', authMiddleware, startPomodoro)
 // POST /pomodoro/abandon
-// GET /pomodoro/current
+router.post('/abandon', authMiddleware, abandonmentPomodoro)
+// GET /pomodoro/currentPomodoro
+router.get('/current', authMiddleware, getCurrentPomodoro)
+
+
 
 export default router
 

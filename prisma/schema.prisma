@@ -28,6 +28,7 @@ model Pomodoro {
   id        String   @id @default(uuid())
   userId    String
   startedAt DateTime @default(now())
+  expiresAt DateTime // new: when pomodoro session will be expired
   endedAt   DateTime?
   duration  Int?
   status    PomodoroStatus @default(ACTIVE)

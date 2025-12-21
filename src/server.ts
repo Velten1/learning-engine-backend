@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/authRoutes'
+import pomodoroRoutes from './routes/pomodoroRoutes'
 
 dotenv.config()
 
@@ -17,6 +18,9 @@ app.get('/health', (req, res) => {
 
 //make a route to auth routes
 app.use('/api/auth', authRoutes)
+
+//make a route to pomodoro routes
+app.use('/api/pomodoro', pomodoroRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
