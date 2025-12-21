@@ -15,7 +15,7 @@ export const startPomodoroService = async (userId: string) => {
   const existingPomodoro = await findActivePomodoroByUserId(userId);
   if (existingPomodoro) {
     const error: any = new Error("Sessão de Pomodoro já existe");
-    error.statusCode = 400;
+    error.statusCode = 409; //status code 409 (Conflict) because pomodoro session already exists for this user
     throw error;
   }
   const newPomodoro = await createPomodoro(userId);
@@ -35,15 +35,19 @@ export const abandonmentPomodoroService = async (
   const existingPomodoro = await findActivePomodoroByUserId(userId);
   if (!existingPomodoro) {
     const error: any = new Error("Sessão de Pomodoro não existe");
-    error.statusCode = 400;
+    error.statusCode = 404; //status code 404 (Not Found) because pomodoro session not exists for this user
     throw error;
   }
   //update updatePomodoro with endedAt and duration abandoned
+  //calculate endedAt as current time when user abandons pomodoro session
+  const endedAt = new Date();
+  //calculate duration in minutes: convert milliseconds to minutes by dividing by 1000 (ms to seconds) and 60 (seconds to minutes)
+  const duration = Math.floor((endedAt.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60);
   const updatedPomodoro = await updatePomodoro(existingPomodoro.id, {
     status: "ABANDONED",
     abandonmentReason: abandonmentReason as string,
-    endedAt: new Date(),
-    duration: new Date().getTime() - existingPomodoro.startedAt.getTime(),
+    endedAt,
+    duration,
   });
   return updatedPomodoro;
 };
@@ -64,8 +68,10 @@ export const getCurrentPomodoroService = async (userId: string) => {
   if (now > existingPomodoro.expiresAt) {
 
     //pomodoro expired, mark as completed
-    const endedAt = existingPomodoro?.expiresAt;
-    const duration = 20;
+    //use current time as endedAt instead of expiresAt to reflect when pomodoro was actually marked as completed
+    const endedAt = now;
+    //calculate duration in minutes based on expiresAt - startedAt (20 minutes default pomodoro duration)
+    const duration = Math.floor((existingPomodoro.expiresAt.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60);
     const completedPomodoro = await completePomodoro(
       existingPomodoro.id,
       endedAt,
@@ -83,5 +89,41 @@ export const getCurrentPomodoroService = async (userId: string) => {
     duration: elapsedMinutes,
     remainingMinutes: 20 - elapsedMinutes,
     expiresAt: existingPomodoro.expiresAt,
+  };
+};
+
+//fetch pomodoro session actually active
+//if not exists, return error because cant complete a pomodoro session that not exists
+//update status = 'COMPLETED', endedAt = now(), duration = 20 minutes (20 minutes is default pomodoro session duration)
+//return pomodoro session completed
+
+export const completePomodoroService = async (userId: string) => {
+  const existingPomodoro = await findActivePomodoroByUserId(userId);
+  if (!existingPomodoro) {
+    const error: any = new Error("Sessão de Pomodoro não existe");
+    error.statusCode = 404; //status code 404 (Not Found) because pomodoro session not exists for this user
+    throw error;
+  }
+  const now = new Date();
+  //allow completing pomodoro when now >= expiresAt - 10 seconds (users usually want to complete with 20 minutes)
+  //this gives a 10 second margin to account for frontend timer precision and network delays
+  const tenSecondsInMs = 10 * 1000;
+  const expiresAtMinusTenSeconds = new Date(existingPomodoro.expiresAt.getTime() - tenSecondsInMs);
+  
+  if (now < expiresAtMinusTenSeconds) {
+    const error: any = new Error("Pomodoro ainda não pode ser completado");
+    error.statusCode = 400;
+    throw error;
+  }
+  
+  //use current time as endedAt when user completes pomodoro session
+  const endedAt = now;
+  //calculate duration in minutes: convert milliseconds to minutes by dividing by 1000 (ms to seconds) and 60 (seconds to minutes)
+  const duration = Math.floor((endedAt.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60);
+  const completedPomodoro = await completePomodoro(existingPomodoro.id, endedAt, duration);
+  return {
+    ...completedPomodoro,
+    duration,
+    isCompleted: true,
   };
 };
