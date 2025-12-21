@@ -20,4 +20,30 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+//create a pomorodo table with id, userId, startedAt, endedAt, status, createdAt, updatedAt
+model Pomodoro {
+  id        String   @id @default(uuid())
+  userId    String
+  startedAt DateTime
+  endedAt   DateTime
+  duration  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//create a reflection table with id, pomodoroId, userId, topic, whatIThought, whatItActuallyIs, summary, mandatoryQuestion, optionalQuestion, createdAt, updatedAt
+model Reflection {
+  id        String   @id @default(uuid())
+  pomodoroId String
+  userId    String
+  topic     String
+  whatIThought String
+  whatItActuallyIs String
+  summary String
+  mandatoryQuestion String
+  optionalQuestion String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 
