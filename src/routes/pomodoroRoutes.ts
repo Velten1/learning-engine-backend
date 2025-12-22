@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { startPomodoro, abandonmentPomodoro, getCurrentPomodoro, completePomodoro } from '../controllers/pomodoroController'
+import { startPomodoro, abandonmentPomodoro, getCurrentPomodoro, completePomodoro, resetPomodoro } from '../controllers/pomodoroController'
 import authMiddleware from '../middleware/authMiddleware'
 
 const router = Router()
@@ -11,9 +11,10 @@ router.post('/start', authMiddleware, startPomodoro)
 router.post('/abandon', authMiddleware, abandonmentPomodoro)
 // GET /pomodoro/currentPomodoro
 router.get('/current', authMiddleware, getCurrentPomodoro)
-//post /pomodoro/complete
+// POST /pomodoro/complete
 router.post('/complete', authMiddleware, completePomodoro)
-
+// POST /pomodoro/reset
+router.post('/reset', authMiddleware, resetPomodoro)
 
 
 export default router

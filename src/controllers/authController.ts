@@ -10,6 +10,17 @@ export const registerController = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Todos os campos são obrigatórios' })
         }
         const response = await registerService(email, password, name)
+        
+        // If registration is successful, save token in cookie httpOnly
+        if (response.status === 201 && response.data?.token) {
+            res.cookie('token', response.data.token, {
+                httpOnly: true,     
+                secure: process.env.NODE_ENV === 'production', 
+                sameSite: 'strict',  
+                maxAge: 3600000     
+            });
+        }
+        
         return res.status(201).json({ message: 'Usuário registrado com sucesso', data: response.data })
     } catch (error: any) {
         console.error('Erro ao cadastrar usuario:', error.message)

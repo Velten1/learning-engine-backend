@@ -24,7 +24,11 @@ export const registerService = async (email: string, password: string, name: str
     // create user and return without password
     const newUser = await createUser(email, hashedPassword, name)
     const { password: _, ...userWithoutPassword } = newUser
-    return { status: 201, data: userWithoutPassword}
+    
+    // Generate token for automatic login
+    const token = generateToken(newUser.id)
+    
+    return { status: 201, data: { ...userWithoutPassword, token } }
 }
 
 export const loginService = async (email: string, password: string) => {

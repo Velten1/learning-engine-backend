@@ -53,3 +53,18 @@ export const completePomodoro = async (id: string, endedAt: Date, duration: numb
         },
     });
 };
+
+//reset pomodoro session
+export const resetPomodoro = async (id: string) => {
+  return await prisma.pomodoro.update({
+    where: { id },
+    data: {
+      status: "ACTIVE",
+      startedAt: new Date(),
+      expiresAt: new Date(Date.now() + 20 * 60 * 1000),
+      endedAt: null,
+      duration: null,
+      abandonmentReason: null,
+    },
+  });
+};

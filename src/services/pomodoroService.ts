@@ -4,6 +4,7 @@ import {
   findActivePomodoroByUserId,
   updatePomodoro,
   completePomodoro,
+  resetPomodoro,
 } from "../repository/pomodoroRepository";
 
 //verify if already exists pomodoro session for the user
@@ -42,7 +43,9 @@ export const abandonmentPomodoroService = async (
   //calculate endedAt as current time when user abandons pomodoro session
   const endedAt = new Date();
   //calculate duration in minutes: convert milliseconds to minutes by dividing by 1000 (ms to seconds) and 60 (seconds to minutes)
-  const duration = Math.floor((endedAt.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60);
+  const duration = Math.floor(
+    (endedAt.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60
+  );
   const updatedPomodoro = await updatePomodoro(existingPomodoro.id, {
     status: "ABANDONED",
     abandonmentReason: abandonmentReason as string,
@@ -66,12 +69,16 @@ export const getCurrentPomodoroService = async (userId: string) => {
   //verify if pomodoro session is expired
   const now = new Date();
   if (now > existingPomodoro.expiresAt) {
-
     //pomodoro expired, mark as completed
     //use current time as endedAt instead of expiresAt to reflect when pomodoro was actually marked as completed
     const endedAt = now;
     //calculate duration in minutes based on expiresAt - startedAt (20 minutes default pomodoro duration)
-    const duration = Math.floor((existingPomodoro.expiresAt.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60);
+    const duration = Math.floor(
+      (existingPomodoro.expiresAt.getTime() -
+        existingPomodoro.startedAt.getTime()) /
+        1000 /
+        60
+    );
     const completedPomodoro = await completePomodoro(
       existingPomodoro.id,
       endedAt,
@@ -79,7 +86,7 @@ export const getCurrentPomodoroService = async (userId: string) => {
     );
     return { ...completedPomodoro, duration, isExpired: true };
   }
-//pomodoro session is not expired, return pomodoro session active and duration calculated
+  //pomodoro session is not expired, return pomodoro session active and duration calculated
   const elapsedMinutes = Math.floor(
     (now.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60
   );
@@ -108,22 +115,48 @@ export const completePomodoroService = async (userId: string) => {
   //allow completing pomodoro when now >= expiresAt - 10 seconds (users usually want to complete with 20 minutes)
   //this gives a 10 second margin to account for frontend timer precision and network delays
   const tenSecondsInMs = 10 * 1000;
-  const expiresAtMinusTenSeconds = new Date(existingPomodoro.expiresAt.getTime() - tenSecondsInMs);
-  
+  const expiresAtMinusTenSeconds = new Date(
+    existingPomodoro.expiresAt.getTime() - tenSecondsInMs
+  );
+
   if (now < expiresAtMinusTenSeconds) {
     const error: any = new Error("Pomodoro ainda não pode ser completado");
     error.statusCode = 400;
     throw error;
   }
-  
+
   //use current time as endedAt when user completes pomodoro session
   const endedAt = now;
   //calculate duration in minutes: convert milliseconds to minutes by dividing by 1000 (ms to seconds) and 60 (seconds to minutes)
-  const duration = Math.floor((endedAt.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60);
-  const completedPomodoro = await completePomodoro(existingPomodoro.id, endedAt, duration);
+  const duration = Math.floor(
+    (endedAt.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60
+  );
+  const completedPomodoro = await completePomodoro(
+    existingPomodoro.id,
+    endedAt,
+    duration
+  );
   return {
     ...completedPomodoro,
     duration,
     isCompleted: true,
   };
+};
+
+//fetch active pomodoro session of userID
+//if not exists, return error because cant reset a pomodoro session that not exists
+//if exists, calculate new expiresAt (now() + 20 minutes) (repo)
+//update startedAt to now() (repo)
+//maintain status as active (repo)
+//maintain endedAt = null, duration = null, abandonmentReason = null (repo)
+//return pomodoro session resetted 
+export const resetPomodoroService = async (userId: string) => {
+  const existingPomodoro = await findActivePomodoroByUserId(userId);
+  if (!existingPomodoro) {
+    const error: any = new Error("Sessão de Pomodoro não existe");
+    error.statusCode = 404; //status code 404 (Not Found) because pomodoro session not exists for this user
+    throw error;
+  }
+  const resettedPomodoro = await resetPomodoro(existingPomodoro.id);
+  return resettedPomodoro;
 };
