@@ -23,3 +23,18 @@ export const generateToken = (userId: string) => {
     }
     return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' })
 }
+
+//find user by id in database
+export const findUserById = async (userId: string) => {
+    return await prisma.user.findUnique({
+        where: { id: userId }
+    })
+}
+
+//update user by id in database
+export const updateUser = async (userId: string, userData: any) => {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: userData
+    })
+}
