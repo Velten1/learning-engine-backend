@@ -1,6 +1,6 @@
 // Service de Reflexões
 
-import { findReflectionByPomodoroId, createReflection } from "../repository/reflectionRepository"
+import { findReflectionByPomodoroId, createReflection, findReflectionById } from "../repository/reflectionRepository"
 import { findPomodoroByIdAndUserId } from "../repository/pomodoroRepository"
 
 //verify if pomodoroSessionId exists and it is from userId
@@ -40,3 +40,24 @@ export const createReflectionService = async (userId: string, reflectionData: {
     return createdReflection
 }
 
+//verify if reflection exists
+//verify if reflection is from userId
+//if validations are ok, call the repository to get the reflection
+//returns reflection
+export const getReflectionService = async (userId: string, reflectionId: string) => {
+    // verify if reflection exists
+    const reflection = await findReflectionById(reflectionId)
+    if (!reflection) {
+        const error: any = new Error("Reflexão não existe")
+        error.statusCode = 404
+        throw error
+    }
+    // verify if reflection is from userId
+    if (reflection.userId !== userId) {
+        const error: any = new Error("Reflexão não pertence ao usuário")
+        error.statusCode = 403
+        throw error
+    }
+    // if validations are ok, call the repository to get the reflection
+    return reflection
+}

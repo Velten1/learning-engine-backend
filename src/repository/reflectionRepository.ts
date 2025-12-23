@@ -24,3 +24,10 @@ export const createReflection = async (reflectionData: {
     data: reflectionData,
   });
 }
+
+//find reflection by id
+export const findReflectionById = async (id: string) => {
+  return await prisma.reflection.findUnique({
+    where: { id: id },
+  });
+}
