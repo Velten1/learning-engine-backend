@@ -9,6 +9,13 @@ export const findActivePomodoroByUserId = async (userId: string) => {
   });
 };
 
+//find pomodoro by id and userId
+export const findPomodoroByIdAndUserId = async (id: string, userId: string) => {
+  return await prisma.pomodoro.findFirst({
+    where: { id, userId },
+  });
+};
+
 //create pomodoro using enum ACTIVE
 export const createPomodoro = async (userId: string) => {
   return await prisma.pomodoro.create({

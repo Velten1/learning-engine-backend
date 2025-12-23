@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/authRoutes'
 import pomodoroRoutes from './routes/pomodoroRoutes'
+import reflectionsRoutes from './routes/reflectionsRoutes'
 
 dotenv.config()
 
@@ -24,6 +25,9 @@ app.use('/api/auth', authRoutes)
 
 //make a route to pomodoro routes
 app.use('/api/pomodoro', pomodoroRoutes)
+
+//make a route to reflections routes
+app.use('/api/reflections', reflectionsRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
