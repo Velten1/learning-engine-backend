@@ -69,6 +69,23 @@ export const getUserProfileService = async (userId: string) => {
     return { status: 200, data: userWithoutPassword }
 }
 
+//renew token service
+//receive userId and generate a new token
+//return new token
+export const renewTokenService = async (userId: string) => {
+    //verify if user exists
+    const user = await findUserById(userId)
+    if (!user) {
+        const error: any = new Error('Usuário não encontrado')
+        error.statusCode = 404
+        throw error
+    }
+    
+    //generate new token
+    const token = generateToken(userId)
+    return { status: 200, data: { token } }
+}
+
 //create userDataToUpdate object to receive all fields 
 //verify if has name 
 //verify if has email

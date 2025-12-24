@@ -1,5 +1,5 @@
 //import auth service with business logic auth
-import { getUserProfileService, loginService, registerService, editUserProfileService } from '../services/authService'
+import { getUserProfileService, loginService, registerService, editUserProfileService, renewTokenService } from '../services/authService'
 import { Request, Response } from 'express'
 
 //controll inputs from register 
@@ -95,6 +95,65 @@ export const editUserProfileController = async (req: Request, res: Response) => 
         return res.status(200).json(response)
     } catch (error: any) {
         console.error('Erro ao editar o perfil do usuário:', error.message)
+        const statusCode = error.statusCode || 500
+        const message = error.message || 'Erro interno do servidor'
+        return res.status(statusCode).json({ message: message })
+    }
+}
+
+//pick up user id from request (from authMiddleware)
+//send to service to renew token
+//save new token in cookie
+//return new token
+export const renewTokenController = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).userId as string
+        const response = await renewTokenService(userId)
+        
+        // Save new token in cookie httpOnly
+        if (response.status === 200 && response.data?.token) {
+            res.cookie('token', response.data.token, {
+                httpOnly: true,     
+                secure: process.env.NODE_ENV === 'production', 
+                sameSite: 'strict',  
+                maxAge: 3600000     // 1 hour
+            });
+        }
+        
+        return res.status(200).json(response)
+    } catch (error: any) {
+        console.error('Erro ao renovar token:', error.message)
+        const statusCode = error.statusCode || 500
+        const message = error.message || 'Erro interno do servidor'
+        return res.status(statusCode).json({ message: message })
+    }
+}
+
+//logout controller
+//clear token cookie
+//return success message
+export const logoutController = async (req: Request, res: Response) => {
+    try {
+        // Clear token cookie with same options used when setting it
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/', // Ensure path matches
+        });
+        
+        // Also try to set an empty cookie with maxAge 0 to ensure it's deleted
+        res.cookie('token', '', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 0, // Expire immediately
+        });
+        
+        return res.status(200).json({ message: 'Logout realizado com sucesso' })
+    } catch (error: any) {
+        console.error('Erro ao fazer logout:', error.message)
         const statusCode = error.statusCode || 500
         const message = error.message || 'Erro interno do servidor'
         return res.status(statusCode).json({ message: message })
