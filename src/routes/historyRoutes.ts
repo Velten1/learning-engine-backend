@@ -1,9 +1,12 @@
 import { Router } from 'express'
+import authMiddleware from '../middleware/authMiddleware'
+import { getTodayStats } from '../controllers/historyController'
 
 const router = Router()
 
-// Rotas de histórico serão implementadas aqui
-// GET /history
+// history routes
+// GET get today stats
+router.get('/today', authMiddleware, getTodayStats)
 
 export default router
 

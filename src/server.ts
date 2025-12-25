@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import authRoutes from './routes/authRoutes'
 import pomodoroRoutes from './routes/pomodoroRoutes'
 import reflectionsRoutes from './routes/reflectionsRoutes'
+import historyRoutes from './routes/historyRoutes'
 
 dotenv.config()
 
@@ -28,6 +29,9 @@ app.use('/api/pomodoro', pomodoroRoutes)
 
 //make a route to reflections routes
 app.use('/api/reflections', reflectionsRoutes)
+
+//make a route to history routes
+app.use('/api/history', historyRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
