@@ -6,6 +6,7 @@ import prisma from "../config/prisma";
 export const findActivePomodoroByUserId = async (userId: string) => {
   return await prisma.pomodoro.findFirst({
     where: { userId, status: "ACTIVE" },
+    orderBy: { createdAt: 'desc' }, // Pega o mais recente
   });
 };
 
@@ -22,7 +23,7 @@ export const createPomodoro = async (userId: string) => {
     data: {
       userId, // pomodoro owner session
       startedAt: new Date(), // pomodoro session started now
-      expiresAt: new Date(Date.now() + 20 * 60 * 1000), // pomodoro session will be expired in 20 minutes
+      expiresAt: new Date(Date.now() + 5 * 1000), // 5 segundos para testes
       status: "ACTIVE", // pomodoro session status active
     },
   });
@@ -68,7 +69,7 @@ export const resetPomodoro = async (id: string) => {
     data: {
       status: "ACTIVE",
       startedAt: new Date(),
-      expiresAt: new Date(Date.now() + 20 * 60 * 1000),
+      expiresAt: new Date(Date.now() + 5 * 1000), // 5 segundos para testes
       endedAt: null,
       duration: null,
       abandonmentReason: null,

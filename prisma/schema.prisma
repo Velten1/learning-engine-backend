@@ -21,7 +21,6 @@ model User {
 
   pomodoros Pomodoro[] @relation("UserPomodoros")
   reflections Reflection[] @relation("UserReflections")
-  history History[] @relation("UserHistory")
 }
 
 //create a pomorodo table with id, userId, startedAt, endedAt, status, createdAt, updatedAt
@@ -38,7 +37,6 @@ model Pomodoro {
   updatedAt DateTime @updatedAt
 
   reflection Reflection? @relation("PomodoroReflections")
-  history History[] @relation("PomodoroHistory")
   user      User     @relation("UserPomodoros", fields: [userId], references: [id])
 
   @@index([userId])
@@ -66,23 +64,18 @@ model Reflection {
 
   user      User     @relation("UserReflections", fields: [userId], references: [id])
   pomodoro  Pomodoro @relation("PomodoroReflections", fields: [pomodoroId], references: [id])
-  history History[] @relation("ReflectionHistory")
 
   @@index([userId])
   @@index([pomodoroId])
 }
 
-//create a history table with id, userId, pomodoroId, reflectionId, createdAt, updatedAt
-//this table will store the history of the user's pomodoro sessions and reflections
-model History {
+model Question {
   id        String   @id @default(uuid())
-  userId    String
-  pomodoroId String
-  reflectionId String?
+  text      String   @db.Text
+  category  String?  @default("general")
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation("UserHistory", fields: [userId], references: [id])
-  pomodoro  Pomodoro @relation("PomodoroHistory", fields: [pomodoroId], references: [id])
-  reflection Reflection? @relation("ReflectionHistory", fields: [reflectionId], references: [id])
+  @@index([category])
 }
