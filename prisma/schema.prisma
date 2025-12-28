@@ -21,6 +21,7 @@ model User {
 
   pomodoros Pomodoro[] @relation("UserPomodoros")
   reflections Reflection[] @relation("UserReflections")
+  decks Deck[] @relation("UserDecks")
 }
 
 //create a pomorodo table with id, userId, startedAt, endedAt, status, createdAt, updatedAt
@@ -78,4 +79,52 @@ model Question {
   updatedAt DateTime @updatedAt
 
   @@index([category])
+}
+
+model Deck {
+    id          String   @id @default(uuid())
+  userId      String
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User  @relation("UserDecks", fields: [userId], references: [id])
+  cards Card[]
+
+  @@index([userId])
+}
+
+model Card {
+  id          String   @id @default(uuid())
+  deckId      String
+  front       String   @db.Text
+  back        String   @db.Text
+  nextReviewAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  deck          Deck           @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  reviewHistory ReviewHistory[]
+
+  @@index([deckId])
+  @@index([nextReviewAt])
+}
+
+enum ReviewRating {
+  WRONG
+  GOOD
+  EASY
+}
+
+model ReviewHistory {
+  id        String       @id @default(uuid())
+  cardId    String
+  rating    ReviewRating
+  reviewedAt DateTime   @default(now())
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@index([reviewedAt])
 }
