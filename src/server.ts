@@ -6,6 +6,7 @@ import pomodoroRoutes from './routes/pomodoroRoutes'
 import reflectionsRoutes from './routes/reflectionsRoutes'
 import historyRoutes from './routes/historyRoutes'
 import questionRoutes from './routes/questionRoutes'
+import deckRoutes from './routes/deckRoutes'
 
 dotenv.config()
 
@@ -36,6 +37,9 @@ app.use('/api/history', historyRoutes)
 
 //make a route to question routes
 app.use('/api/questions', questionRoutes)
+
+//make a route to deck routes
+app.use('/api/decks', deckRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
