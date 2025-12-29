@@ -10,3 +10,11 @@ export const createDeckRepository = async (userId: string, name: string, descrip
         }
     })
 }
+
+//find decks by user id
+export const findDecksByUserId = async (userId: string) => {
+    return await prisma.deck.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' }
+    })
+}

@@ -110,11 +110,11 @@ export const getReflectionsByPomodoroSessionIdService = async (
 };
 
 //receive userId and call the repository to get the reflections by user id
-//returns array of reflections (pode ser array vazio)
+//returns array of reflections (can be empty array)
 export const getReflectionsByUserIdService = async (userId: string) => {
   // call the repository to get the reflections by user id
   const reflections = await findReflectionsByUserId(userId);
-  // findMany sempre retorna um array (pode ser vazio), não precisa verificar null
+  // findMany always returns an array (can be empty), no need to verify null
   return reflections;
 };
 

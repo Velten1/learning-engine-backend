@@ -1,6 +1,6 @@
 //deck service
 
-import { createDeckRepository } from "../repository/deckRepository"
+import { createDeckRepository, findDecksByUserId } from "../repository/deckRepository"
 
 //validate that name is not empty or just whitespace
 //validate that name has maximum 100 characters
@@ -23,4 +23,13 @@ export const createDeckService = async (userId: string, name: string, descriptio
     const deck = await createDeckRepository(userId, name, description)
     //return the deck created
     return deck
+}
+
+//call repository to get all decks by user id
+//return array of decks
+export const getDecksByUserIdService = async (userId: string) => {
+    // call the repository to get all decks by user id
+    const decks = await findDecksByUserId(userId)
+    // findMany always returns an array (can be empty), no need to verify null
+    return decks
 }
