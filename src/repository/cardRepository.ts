@@ -33,6 +33,7 @@ export const findCardsByDeckId = async (deckId: string) => {
 }
 
 //find cards due for review (nextReviewAt <= now) for a specific user
+//Includes both new cards and cards that have been reviewed before
 export const findCardsDueForReview = async (userId: string) => {
     const now = new Date();
     return await prisma.card.findMany({
@@ -59,6 +60,158 @@ export const findCardsDueForReview = async (userId: string) => {
     })
 }
 
+//find cards due for review by deck id
+export const findCardsDueForReviewByDeckId = async (deckId: string) => {
+    const now = new Date();
+    // Add 1 second buffer to account for timing differences
+    const nowWithBuffer = new Date(now.getTime() + 1000);
+    return await prisma.card.findMany({
+        where: {
+            deckId: deckId,
+            nextReviewAt: {
+                lte: nowWithBuffer
+            }
+        },
+        include: {
+            deck: {
+                select: {
+                    id: true,
+                    name: true,
+                    userId: true
+                }
+            }
+        },
+        orderBy: {
+            nextReviewAt: 'asc'
+        }
+    })
+}
+
+//find new cards (cards that have never been reviewed - no reviewHistory)
+//These are cards ready to be studied for the first time
+export const findNewCards = async (userId: string) => {
+    const now = new Date();
+    return await prisma.card.findMany({
+        where: {
+            deck: {
+                userId: userId
+            },
+            reviewHistory: {
+                none: {} // Never been reviewed
+            },
+            nextReviewAt: {
+                lte: now // Ready to be reviewed
+            }
+        },
+        include: {
+            deck: {
+                select: {
+                    id: true,
+                    name: true,
+                    userId: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    })
+}
+
+//find new cards by deck id
+export const findNewCardsByDeckId = async (deckId: string) => {
+    const now = new Date();
+    // Add 1 second buffer to account for timing differences
+    const nowWithBuffer = new Date(now.getTime() + 1000);
+    return await prisma.card.findMany({
+        where: {
+            deckId: deckId,
+            reviewHistory: {
+                none: {}
+            },
+            nextReviewAt: {
+                lte: nowWithBuffer
+            }
+        },
+        include: {
+            deck: {
+                select: {
+                    id: true,
+                    name: true,
+                    userId: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    })
+}
+
+//find cards in learning (cards that have been reviewed but nextReviewAt is in the future and within 1 day)
+export const findCardsInLearning = async (userId: string) => {
+    const now = new Date();
+    const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    
+    return await prisma.card.findMany({
+        where: {
+            deck: {
+                userId: userId
+            },
+            nextReviewAt: {
+                gt: now,
+                lte: oneDayFromNow
+            },
+            reviewHistory: {
+                some: {}
+            }
+        },
+        include: {
+            deck: {
+                select: {
+                    id: true,
+                    name: true,
+                    userId: true
+                }
+            }
+        },
+        orderBy: {
+            nextReviewAt: 'asc'
+        }
+    })
+}
+
+//find cards in learning by deck id
+export const findCardsInLearningByDeckId = async (deckId: string) => {
+    const now = new Date();
+    const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    
+    return await prisma.card.findMany({
+        where: {
+            deckId: deckId,
+            nextReviewAt: {
+                gt: now,
+                lte: oneDayFromNow
+            },
+            reviewHistory: {
+                some: {}
+            }
+        },
+        include: {
+            deck: {
+                select: {
+                    id: true,
+                    name: true,
+                    userId: true
+                }
+            }
+        },
+        orderBy: {
+            nextReviewAt: 'asc'
+        }
+    })
+}
+
 //update card (front and/or back)
 export const updateCard = async (
     id: string,
@@ -81,7 +234,10 @@ export const updateCard = async (
 export const updateCardNextReview = async (id: string, nextReviewAt: Date) => {
     return await prisma.card.update({
         where: { id },
-        data: { nextReviewAt }
+        data: { nextReviewAt },
+        include: {
+            deck: true
+        }
     })
 }
 
@@ -91,4 +247,3 @@ export const deleteCard = async (id: string) => {
         where: { id }
     })
 }
-

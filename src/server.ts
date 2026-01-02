@@ -8,6 +8,7 @@ import historyRoutes from './routes/historyRoutes'
 import questionRoutes from './routes/questionRoutes'
 import deckRoutes from './routes/deckRoutes'
 import cardRoutes from './routes/cardRoutes'
+import reviewRoutes from './routes/reviewRoutes'
 
 dotenv.config()
 
@@ -44,6 +45,9 @@ app.use('/api/decks', deckRoutes)
 
 //make a route to card routes
 app.use('/api/cards', cardRoutes)
+
+//make a route to review routes
+app.use('/api/reviews', reviewRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

@@ -1,162 +1,125 @@
-// Service de Cards
-
 import {
     createCard,
     findCardById,
     findCardsByDeckId,
-    findCardsDueForReview,
     updateCard,
-    updateCardNextReview,
-    deleteCard
-} from "../repository/cardRepository"
-import { findDeckById } from "../repository/deckRepository"
+    deleteCard,
+    findCardsDueForReview,
+    findNewCards,
+    findCardsInLearning,
+    findCardsDueForReviewByDeckId,
+    findNewCardsByDeckId,
+    findCardsInLearningByDeckId,
+} from "../repository/cardRepository";
+import { findDeckById, findDecksByUserId } from "../repository/deckRepository";
 
-//validate that deck exists and belongs to userId
-//validate that front and back are not empty
-//create card with nextReviewAt = now()
-export const createCardService = async (userId: string, deckId: string, front: string, back: string) => {
-    //validate that deck exists and belongs to userId
-    const deck = await findDeckById(deckId)
+export const createCardService = async (
+    userId: string,
+    deckId: string,
+    front: string,
+    back: string
+) => {
+    const deck = await findDeckById(deckId);
     if (!deck) {
-        const error: any = new Error("Deck não encontrado")
-        error.statusCode = 404
-        throw error
+        const error: any = new Error("Deck não encontrado");
+        error.statusCode = 404;
+        throw error;
     }
     if (deck.userId !== userId) {
-        const error: any = new Error("Deck não pertence ao usuário")
-        error.statusCode = 403
-        throw error
+        const error: any = new Error("Deck não pertence ao usuário");
+        error.statusCode = 403;
+        throw error;
     }
-
-    //validate that front and back are not empty
     if (!front || front.trim().length === 0) {
-        const error: any = new Error("Frente do card não pode estar vazia")
-        error.statusCode = 400
-        throw error
+        const error: any = new Error("Frente do card não pode estar vazia");
+        error.statusCode = 400;
+        throw error;
     }
     if (!back || back.trim().length === 0) {
-        const error: any = new Error("Verso do card não pode estar vazio")
-        error.statusCode = 400
-        throw error
+        const error: any = new Error("Verso do card não pode estar vazio");
+        error.statusCode = 400;
+        throw error;
     }
+    const card = await createCard(deckId, front, back);
+    return card;
+};
 
-    //create card with nextReviewAt = now()
-    const card = await createCard(deckId, front.trim(), back.trim())
-    return card
-}
-
-//validate that card exists
-//validate that deck of card belongs to userId
-//return card
 export const getCardByIdService = async (cardId: string, userId: string) => {
-    const card = await findCardById(cardId)
+    const card = await findCardById(cardId);
     if (!card) {
-        const error: any = new Error("Card não encontrado")
-        error.statusCode = 404
-        throw error
+        const error: any = new Error("Card não encontrado");
+        error.statusCode = 404;
+        throw error;
     }
-    //validate that deck of card belongs to userId
     if (card.deck.userId !== userId) {
-        const error: any = new Error("Card não pertence ao usuário")
-        error.statusCode = 403
-        throw error
+        const error: any = new Error("Card não pertence ao usuário");
+        error.statusCode = 403;
+        throw error;
     }
-    return card
-}
+    return card;
+};
 
-//validate that deck exists and belongs to userId
-//find all cards of deck
-//return array of cards
 export const getCardsByDeckIdService = async (deckId: string, userId: string) => {
-    //validate that deck exists and belongs to userId
-    const deck = await findDeckById(deckId)
+    const deck = await findDeckById(deckId);
     if (!deck) {
-        const error: any = new Error("Deck não encontrado")
-        error.statusCode = 404
-        throw error
+        const error: any = new Error("Deck não encontrado");
+        error.statusCode = 404;
+        throw error;
     }
     if (deck.userId !== userId) {
-        const error: any = new Error("Deck não pertence ao usuário")
-        error.statusCode = 403
-        throw error
+        const error: any = new Error("Deck não pertence ao usuário");
+        error.statusCode = 403;
+        throw error;
     }
-    //find all cards of deck
-    const cards = await findCardsByDeckId(deckId)
-    return cards
-}
+    const cards = await findCardsByDeckId(deckId);
+    return cards;
+};
 
-//validate that card exists
-//validate that deck of card belongs to userId
-//validate front/back if provided
-//update card
 export const updateCardService = async (
     cardId: string,
     userId: string,
-    cardData: {
-        front?: string;
-        back?: string;
-    }
+    cardData: { front?: string; back?: string }
 ) => {
-    //validate that card exists
-    const card = await findCardById(cardId)
+    const card = await findCardById(cardId);
     if (!card) {
-        const error: any = new Error("Card não encontrado")
-        error.statusCode = 404
-        throw error
+        const error: any = new Error("Card não encontrado");
+        error.statusCode = 404;
+        throw error;
     }
-    //validate that deck of card belongs to userId
     if (card.deck.userId !== userId) {
-        const error: any = new Error("Card não pertence ao usuário")
-        error.statusCode = 403
-        throw error
+        const error: any = new Error("Card não pertence ao usuário");
+        error.statusCode = 403;
+        throw error;
     }
-
-    //validate front/back if provided
-    if (cardData.front !== undefined && (!cardData.front || cardData.front.trim().length === 0)) {
-        const error: any = new Error("Frente do card não pode estar vazia")
-        error.statusCode = 400
-        throw error
+    if (cardData.front !== undefined && cardData.front.trim().length === 0) {
+        const error: any = new Error("Frente do card não pode estar vazia");
+        error.statusCode = 400;
+        throw error;
     }
-    if (cardData.back !== undefined && (!cardData.back || cardData.back.trim().length === 0)) {
-        const error: any = new Error("Verso do card não pode estar vazio")
-        error.statusCode = 400
-        throw error
+    if (cardData.back !== undefined && cardData.back.trim().length === 0) {
+        const error: any = new Error("Verso do card não pode estar vazio");
+        error.statusCode = 400;
+        throw error;
     }
+    const updatedCard = await updateCard(cardId, cardData);
+    return updatedCard;
+};
 
-    //build update data
-    const updateData: {
-        front?: string;
-        back?: string;
-    } = {}
-    if (cardData.front !== undefined) updateData.front = cardData.front.trim()
-    if (cardData.back !== undefined) updateData.back = cardData.back.trim()
-
-    //update card
-    const updatedCard = await updateCard(cardId, updateData)
-    return updatedCard
-}
-
-//validate that card exists
-//validate that deck of card belongs to userId
-//delete card
 export const deleteCardService = async (cardId: string, userId: string) => {
-    //validate that card exists
-    const card = await findCardById(cardId)
+    const card = await findCardById(cardId);
     if (!card) {
-        const error: any = new Error("Card não encontrado")
-        error.statusCode = 404
-        throw error
+        const error: any = new Error("Card não encontrado");
+        error.statusCode = 404;
+        throw error;
     }
-    //validate that deck of card belongs to userId
     if (card.deck.userId !== userId) {
-        const error: any = new Error("Card não pertence ao usuário")
-        error.statusCode = 403
-        throw error
+        const error: any = new Error("Card não pertence ao usuário");
+        error.statusCode = 403;
+        throw error;
     }
-    //delete card
-    const deletedCard = await deleteCard(cardId)
-    return deletedCard
-}
+    const deletedCard = await deleteCard(cardId);
+    return deletedCard;
+};
 
 //find cards of user where nextReviewAt <= now()
 //include deck information (name)
@@ -166,3 +129,79 @@ export const getCardsDueForReviewService = async (userId: string) => {
     return cards
 }
 
+//get new cards (never reviewed)
+export const getNewCardsService = async (userId: string) => {
+    const cards = await findNewCards(userId)
+    return cards
+}
+
+//get cards in learning (reviewed but nextReviewAt is in the future within 1 day)
+export const getCardsInLearningService = async (userId: string) => {
+    const cards = await findCardsInLearning(userId)
+    return cards
+}
+
+//get deck statistics (new, learning, due) for a specific deck
+export const getDeckStatsService = async (deckId: string, userId: string) => {
+    const deck = await findDeckById(deckId);
+    if (!deck) {
+        const error: any = new Error("Deck não encontrado");
+        error.statusCode = 404;
+        throw error;
+    }
+    if (deck.userId !== userId) {
+        const error: any = new Error("Deck não pertence ao usuário");
+        error.statusCode = 403;
+        throw error;
+    }
+
+    const [newCards, learningCards, dueCards] = await Promise.all([
+        findNewCardsByDeckId(deckId),
+        findCardsInLearningByDeckId(deckId),
+        findCardsDueForReviewByDeckId(deckId),
+    ]);
+
+    console.log(`Deck ${deck.name} (${deckId}) stats:`, {
+        new: newCards.length,
+        learning: learningCards.length,
+        due: dueCards.length,
+        newCards: newCards.map(c => ({ id: c.id, nextReviewAt: c.nextReviewAt })),
+        dueCards: dueCards.map(c => ({ id: c.id, nextReviewAt: c.nextReviewAt })),
+    });
+
+    return {
+        new: newCards.length,
+        learning: learningCards.length,
+        due: dueCards.length,
+    };
+}
+
+//get all decks with their statistics for a user
+export const getDecksWithStatsService = async (userId: string) => {
+    const decks = await findDecksByUserId(userId);
+    
+    const decksWithStats = await Promise.all(
+        decks.map(async (deck) => {
+            const [newCards, learningCards, dueCards] = await Promise.all([
+                findNewCardsByDeckId(deck.id),
+                findCardsInLearningByDeckId(deck.id),
+                findCardsDueForReviewByDeckId(deck.id),
+            ]);
+
+            return {
+                id: deck.id,
+                name: deck.name,
+                description: deck.description,
+                createdAt: deck.createdAt,
+                updatedAt: deck.updatedAt,
+                stats: {
+                    new: newCards.length,
+                    learning: learningCards.length,
+                    due: dueCards.length,
+                }
+            };
+        })
+    );
+
+    return decksWithStats;
+}
