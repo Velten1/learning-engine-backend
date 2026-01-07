@@ -23,7 +23,7 @@ export const createPomodoro = async (userId: string) => {
     data: {
       userId, // pomodoro owner session
       startedAt: new Date(), // pomodoro session started now
-      expiresAt: new Date(Date.now() + 5 * 1000), // 5 segundos para testes
+      expiresAt: new Date(Date.now() + 20 * 60 * 1000), // 20 minutos
       status: "ACTIVE", // pomodoro session status active
     },
   });
@@ -69,7 +69,7 @@ export const resetPomodoro = async (id: string) => {
     data: {
       status: "ACTIVE",
       startedAt: new Date(),
-      expiresAt: new Date(Date.now() + 5 * 1000), // 5 segundos para testes
+      expiresAt: new Date(Date.now() + 20 * 60 * 1000), // 20 minutos
       endedAt: null,
       duration: null,
       abandonmentReason: null,
