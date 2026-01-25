@@ -1,25 +1,32 @@
 //import jwt and request, response, next function
-import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import { verifyAccessToken } from "../utils/jwt";
 
 const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const token =
-      (req as any).cookies?.token || req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
+    // Get access token from Authorization header (Bearer token)
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "É necessário fazer login" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      userId: string;
-    };
+    const accessToken = authHeader.split(" ")[1];
 
-    (req as any).userId = decoded.userId;
+    if (!accessToken) {
+      return res.status(401).json({ message: "É necessário fazer login" });
+    }
+
+    // Verify access token using the new JWT utils
+    const userId = verifyAccessToken(accessToken);
+
+    // Attach userId to request
+    (req as any).userId = userId;
 
     next();
-  } catch (error) {
-    return res.status(401).json({ message: "Token inválido" });
+  } catch (error: any) {
+    // Handle specific error messages from verifyAccessToken
+    const errorMessage = error.message || "Token inválido";
+    return res.status(401).json({ message: errorMessage });
   }
 };
 

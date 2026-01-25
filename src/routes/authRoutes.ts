@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { registerController, loginController, getUserProfileController, editUserProfileController, renewTokenController, logoutController} from '../controllers/authController'
+import { registerController, loginController, getUserProfileController, editUserProfileController, renewTokenController, logoutController, refreshTokenController} from '../controllers/authController'
 import authMiddleware from '../middleware/authMiddleware'
 
 const router = Router()
@@ -17,6 +17,8 @@ router.put('/me', authMiddleware, editUserProfileController)
 router.post('/renew-token', authMiddleware, renewTokenController)
 // POST /api/auth/logout
 router.post('/logout', authMiddleware, logoutController)
+// POST /api/auth/refresh-token without middleware bc token already expired
+router.post('/refresh-token', refreshTokenController)
 
 export default router
 
