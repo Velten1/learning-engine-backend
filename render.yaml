@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: learning-engine-backend
+    env: node
+    buildCommand: npm install && npm run build && npm run prisma:generate
+    startCommand: npm run prisma:migrate:deploy && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: FRONTEND_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
