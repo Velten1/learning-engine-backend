@@ -133,7 +133,7 @@ model ReviewHistory {
 //create a refresh token table 
 model RefreshToken {
   id        String   @id @default(uuid())
-  token     String   @unique
+  token     String   @db.VarChar(512) @unique
   userId    String
   expiresAt DateTime
   createdAt DateTime @default(now())
