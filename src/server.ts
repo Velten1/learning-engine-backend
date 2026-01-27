@@ -16,9 +16,16 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3001
 
+// Configuração de CORS - permite apenas o domínio específico do frontend
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000'
+// Normalizar a URL (remover barra no final se existir)
+const normalizedFrontendUrl = FRONTEND_URL.replace(/\/$/, '')
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: normalizedFrontendUrl,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 app.use(express.json())
 app.use(cookieParser())
