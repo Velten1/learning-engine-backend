@@ -172,18 +172,68 @@ const questions = [
   
 
 async function main() {
-  for (const question of questions) {
-    await prisma.question.create({
-      data: {
-        text: question,
-        isActive: true,
-      },
-    })
+  console.log('Iniciando seed de questões...')
+  console.log(`Total de questões a processar: ${questions.length}`)
+  
+  let created = 0
+  let skipped = 0
+  let errors = 0
+  
+  for (let i = 0; i < questions.length; i++) {
+    const question = questions[i]
+    
+    try {
+      // Verificar se a questão já existe no banco
+      const existing = await prisma.question.findFirst({
+        where: { text: question }
+      })
+      
+      if (existing) {
+        skipped++
+        if ((i + 1) % 20 === 0) {
+          console.log(`Processando... ${i + 1}/${questions.length}`)
+        }
+        continue
+      }
+      
+      // Criar a questão apenas se não existir
+      await prisma.question.create({
+        data: {
+          text: question,
+          isActive: true,
+        },
+      })
+      
+      created++
+      
+      // Log de progresso a cada 20 questões
+      if ((i + 1) % 20 === 0) {
+        console.log(`Processando... ${i + 1}/${questions.length}`)
+      }
+    } catch (error: any) {
+      errors++
+      const questionPreview = question.length > 50 
+        ? `${question.substring(0, 50)}...` 
+        : question
+      console.error(`Erro ao criar questão ${i + 1}: "${questionPreview}"`)
+      console.error(`Erro: ${error.message}`)
+      // Continua processando as próximas questões mesmo se uma falhar
+    }
   }
+  
+  // Resumo final
+  console.log('\nSeed concluído!')
+  console.log(`${created} questões criadas`)
+  console.log(`${skipped} questões já existiam (puladas)`)
+  if (errors > 0) {
+    console.log(`${errors} erros encontrados`)
+  }
+  console.log(`Total processado: ${questions.length} questões\n`)
 }
 
 main()
   .catch((e) => {
+    console.error('\nErro fatal durante o seed:')
     console.error(e)
     process.exit(1)
   })
