@@ -6,7 +6,7 @@ import prisma from "../config/prisma";
 export const findActivePomodoroByUserId = async (userId: string) => {
   return await prisma.pomodoro.findFirst({
     where: { userId, status: "ACTIVE" },
-    orderBy: { createdAt: 'desc' }, // Pega o mais recente
+    orderBy: { createdAt: 'desc' }, // get the most recent
   });
 };
 
@@ -74,5 +74,13 @@ export const resetPomodoro = async (id: string) => {
       duration: null,
       abandonmentReason: null,
     },
+  });
+};
+
+//find pomodoro by userId and filter by status completed (most rescent)
+export const findMostRecentCompletedPomodoroByUserId = async (userId: string) => {
+  return await prisma.pomodoro.findFirst({
+    where: { userId, status: "COMPLETED" },
+    orderBy: { endedAt: 'desc' }, // get the most recent
   });
 };

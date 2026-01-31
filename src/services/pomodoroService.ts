@@ -91,10 +91,15 @@ export const getCurrentPomodoroService = async (userId: string) => {
     (now.getTime() - existingPomodoro.startedAt.getTime()) / 1000 / 60
   );
 
+  // Calculate remaining time dynamically based on expiresAt
+  const remainingSeconds = Math.max(0, Math.floor((existingPomodoro.expiresAt.getTime() - now.getTime()) / 1000));
+  const remainingMinutes = Math.floor(remainingSeconds / 60);
+  
   return {
     ...existingPomodoro,
     duration: elapsedMinutes,
-    remainingMinutes: 20 - elapsedMinutes,
+    remainingMinutes: remainingMinutes,
+    remainingSeconds: remainingSeconds,
     expiresAt: existingPomodoro.expiresAt,
   };
 };
