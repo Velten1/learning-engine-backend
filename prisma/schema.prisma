@@ -25,6 +25,11 @@ model User {
   refreshTokens RefreshToken[] @relation("UserRefreshTokens")
 }
 
+enum PomodoroStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
 //create a pomorodo table with id, userId, startedAt, endedAt, status, createdAt, updatedAt
 model Pomodoro {
   id        String   @id @default(uuid())
@@ -44,7 +49,7 @@ model Pomodoro {
   @@index([userId])
 }
 
-enum PomodoroStatus {
+enum PauseStatus {
   ACTIVE
   COMPLETED
   ABANDONED
@@ -56,6 +61,7 @@ model Pause {
   pomodoroId String
   startedAt DateTime
   endedAt DateTime?
+  status PauseStatus @default(ACTIVE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
