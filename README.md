@@ -141,7 +141,7 @@ npm start                # Inicia o servidor em modo produção
 
 # Prisma
 npm run prisma:generate  # Gera o Prisma Client
-npm run prisma:migrate   # Executa as migrações do banco
+npm run prisma:push      # Executa as migrações do banco
 npm run prisma:studio    # Abre o Prisma Studio (interface visual do banco)
 npm run prisma:seed      # Popula o banco com dados iniciais
 ```
